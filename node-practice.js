@@ -3,12 +3,13 @@
 const fs = require("fs");
 const prompt = require("prompt-sync")({ sigint: true });
 const currentPath = process.argv[1];
+const path = require("path");
 // const Input = process.argv[2];
 let exitFlag = false;
 
 while (!exitFlag) {
   const firstAsk = prompt(
-    "What would you like to do? (Type 'F' for Folders, 'f' for files, 'C' to copy) Exit with 'Q'): "
+    "What would you like to do? (Type 'F' for Folders, 'f' for files, 'C' to copy, W to edit file content) Exit with 'Q'): "
   );
 
   //Create Folder
@@ -68,32 +69,82 @@ while (!exitFlag) {
     //Terminates Operation
     console.log("Process Terminated");
     exitFlag = true;
-  } else if (firstAsk === "C") {
-    // Copy files
+  } else if (firstAsk === "W") {
+    // Write to files
     let inputpath = "";
     let inputDestination = "";
-    const copyfiles = (sourcePath, destination) => {
+    const write = (sourcePath, destination) => {
       if (inputpath !== "X") {
-        try {
-          inputpath = prompt("Enter path to file (type X to exit): ");
-          if (inputpath !== "X") {
+        inputpath = prompt("Enter path to file (type X to exit): ");
+        if (inputpath !== "X") {
+          try {
             sourcePath = inputpath;
-            const fileData = fs.readFileSync(sourcePath, "utf-8");
-            console.log(fileData);
-            inputDestination = prompt(
-              "Enter path to directory (type X to exit): "
-            );
-            if (inputDestination !== "X") {
-              destination = inputDestination;
-              fs.writeFileSync(destination, fileData);
+            const pathStat = fs.statSync(sourcePath);
+            // Check is path contains valid file
+            if (pathStat.isFile()) {
+              const fileData = fs.readFileSync(sourcePath, "utf-8");
+              console.log(`${fileData} Selected!`);
+              inputDestination = prompt(
+                "Enter path to file to write to (type X to exit): "
+              );
+              if (inputDestination !== "X") {
+                const directoryStat = fs.statSync(sourcePath);
+                const fileName = sourcePath.split("/").pop();
+                // Check if path is a is a file
+                if (directoryStat.isFile()) {
+                  destination = inputDestination;
+                  const fileDestination = `${destination}/${fileName}`;
+                  fs.writeFileSync(fileDestination, fileData);
+                  console.log(`Action Successful!`);
+                }
+              }
+            } else {
+              console.log(
+                `Invalid operation, ${pathStat} is not a valid file format!`
+              );
             }
+          } catch (err) {
+            console.log(`Something Went Wrong: ${err}`);
           }
-        } catch (err) {
-          console.log(`Something Went Wrong: ${err}`);
         }
       }
     };
-    copyfiles(inputpath, inputDestination);
+    write(inputpath, inputDestination);
+  } else if (firstAsk === "C") {
+    // Write to files
+    const copyfiles = () => {
+      let inputpath = "";
+      let inputDestination = "";
+      if (inputpath !== "X") {
+        inputpath = prompt("Enter path to file (type X to exit): ");
+        const inputPathSync = fs.statSync(inputpath);
+        if (inputpath !== "X" && inputPathSync.isFile()) {
+          try {
+            const currentPath = fs.createReadStream(inputpath);
+            // Check is path contains valid file
+            inputDestination = prompt(
+              "Enter path to file to write to (type X to exit): "
+            );
+            if (inputDestination !== "X") {
+              const directoryStat = fs.statSync(inputDestination);
+              // Check if path is a is a file
+              if (directoryStat.isDirectory()) {
+                const file = path.basename(inputpath);
+                const destinationPath = path.join(inputDestination, file);
+                const destination_Dir = fs.createWriteStream(destinationPath);
+                currentPath.pipe(destination_Dir);
+                console.log(`Action Successful!`);
+              }
+            }
+          } catch (err) {
+            console.trace(`Something Went Wrong: ${err}`);
+          }
+        } else {
+          console.log(`Error: ${inputpath} is not a valid File`);
+        }
+      }
+    };
+    copyfiles();
   } else {
     console.log("Invalid input!");
   }
