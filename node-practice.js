@@ -1,5 +1,6 @@
 "use strict";
 
+const { trace } = require("console");
 const fs = require("fs");
 const prompt = require("prompt-sync")({ sigint: true });
 const currentPath = process.argv[1];
@@ -145,6 +146,21 @@ while (!exitFlag) {
       }
     };
     copyfiles();
+  } else if (firstAsk === "D") {
+    let path_dir = prompt("Enter path to file to delete file");
+    if (path_dir !== "X") {
+      try {
+        let pathStat = fs.statSync(path_dir);
+        if (pathStat.isFile()) {
+          const file = path.basename(path_dir);
+          fs.unlinkSync(file);
+        } else {
+          console.log("Action Failed, file not found!");
+        }
+      } catch (e) {
+        console.trace(`An error occurred ${e}`);
+      }
+    }
   } else {
     console.log("Invalid input!");
   }
