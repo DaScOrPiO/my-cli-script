@@ -4,7 +4,6 @@
 ## SETTING UP
 
 1. Clone the repository run `git clone https://github.com/DaScOrPiO/my-cli-script.git`
-2. Run `npm install` to install all project dependency to make the program functional.
 
 ## USAGE
 1. To use the program, From anywhere on your pc, refrence the path where cli-script is located on your computer
