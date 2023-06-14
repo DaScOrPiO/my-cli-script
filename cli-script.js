@@ -1,6 +1,5 @@
 "use strict";
 
-const { trace } = require("console");
 const fs = require("fs");
 const prompt = require("prompt-sync")({ sigint: true });
 const currentPath = process.argv[1];
@@ -10,7 +9,7 @@ let exitFlag = false;
 
 while (!exitFlag) {
   const firstAsk = prompt(
-    "What would you like to do? (Type 'F' for Folders, 'f' for files, 'C' to copy, W to edit file content) Exit with 'Q'): "
+    "What would you like to do? (Type 'F' for Folders, 'f' for files, 'C' to copy, Exit with 'Q'): "
   );
 
   //Create Folder
@@ -50,7 +49,7 @@ while (!exitFlag) {
       const arr = [];
 
       while (inputFile !== "X") {
-        inputFile = prompt("File name(s) (type X to exit): ");
+        inputFile = prompt("File name (type X to exit): ");
 
         if (inputFile !== "X") {
           arr.push(inputFile);
@@ -70,49 +69,8 @@ while (!exitFlag) {
     //Terminates Operation
     console.log("Process Terminated");
     exitFlag = true;
-  } else if (firstAsk === "W") {
-    // Write to files
-    let inputpath = "";
-    let inputDestination = "";
-    const write = (sourcePath, destination) => {
-      if (inputpath !== "X") {
-        inputpath = prompt("Enter path to file (type X to exit): ");
-        if (inputpath !== "X") {
-          try {
-            sourcePath = inputpath;
-            const pathStat = fs.statSync(sourcePath);
-            // Check is path contains valid file
-            if (pathStat.isFile()) {
-              const fileData = fs.readFileSync(sourcePath, "utf-8");
-              console.log(`${fileData} Selected!`);
-              inputDestination = prompt(
-                "Enter path to file to write to (type X to exit): "
-              );
-              if (inputDestination !== "X") {
-                const directoryStat = fs.statSync(sourcePath);
-                const fileName = sourcePath.split("/").pop();
-                // Check if path is a is a file
-                if (directoryStat.isFile()) {
-                  destination = inputDestination;
-                  const fileDestination = `${destination}/${fileName}`;
-                  fs.writeFileSync(fileDestination, fileData);
-                  console.log(`Action Successful!`);
-                }
-              }
-            } else {
-              console.log(
-                `Invalid operation, ${pathStat} is not a valid file format!`
-              );
-            }
-          } catch (err) {
-            console.log(`Something Went Wrong: ${err}`);
-          }
-        }
-      }
-    };
-    write(inputpath, inputDestination);
   } else if (firstAsk === "C") {
-    // Write to files
+    // Copy to folders
     const copyfiles = () => {
       let inputpath = "";
       let inputDestination = "";
@@ -147,18 +105,20 @@ while (!exitFlag) {
     };
     copyfiles();
   } else if (firstAsk === "D") {
-    let path_dir = prompt("Enter path to file to delete file: ");
+    // Delete a file in directory
+    let path_dir = prompt("Enter filename: ");
     if (path_dir !== "X") {
       try {
         let pathStat = fs.statSync(path_dir);
         if (pathStat.isFile()) {
           const file = path.basename(path_dir);
           fs.unlinkSync(file);
+          console.log("Action Successful!");
         } else {
           console.log("Action Failed, file not found!");
         }
       } catch (e) {
-        console.trace(`An error occurred ${e}`);
+        console.log(`An error occurred ${e}`);
       }
     }
   } else {
