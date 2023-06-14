@@ -147,7 +147,7 @@ while (!exitFlag) {
     };
     copyfiles();
   } else if (firstAsk === "D") {
-    let path_dir = prompt("Enter path to file to delete file");
+    let path_dir = prompt("Enter path to file to delete file: ");
     if (path_dir !== "X") {
       try {
         let pathStat = fs.statSync(path_dir);
